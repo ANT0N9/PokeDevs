@@ -67,7 +67,7 @@ botonesHeader.forEach(boton => boton.addEventListener("click", (event) =>{
             })
     }
 }))
-
+/*
 function datosPoke(){
     const div = document.createElement("div");
     console.log("le diste click")
@@ -78,3 +78,4 @@ function datosPoke(){
     `;
     datosPokemon.append(div)
 }
+*/
