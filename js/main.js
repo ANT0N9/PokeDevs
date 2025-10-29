@@ -1,29 +1,36 @@
-const listaPokemon = document.querySelector ("#listaPokemon");
-const datosPokemon = document.querySelector ("#datosPokemon");
+const listaPokemon = document.querySelector("#listaPokemon");
 const botonesHeader = document.querySelectorAll(".btn-header");
-let URL = "https://pokeapi.co/api/v2/pokemon/";
+const URL = "https://pokeapi.co/api/v2/pokemon/";
 
-for (let i = 1; i <= 151; i++){
-    fetch(URL + i)
-        .then((Response) => Response.json())
-        .then(data => mostrarPokemon(data))
+let allPokemons = [];
+
+const fetchAllPokemons = async () => {
+    const promises = [];
+    for (let i = 1; i <= 151; i++) {
+        promises.push(fetch(URL + i).then(res => res.json()));
+    }
+    allPokemons = await Promise.all(promises);
+    displayPokemons(allPokemons);
+};
+
+function displayPokemons(pokemons) {
+    listaPokemon.innerHTML = "";
+    pokemons.forEach(pokemon => mostrarPokemon(pokemon));
 }
 
-function mostrarPokemon(poke){
-
-    let tipos = poke.types.map(type => `<p class="${type.type.name} tipo">${type.type.name}</p>`);
+function mostrarPokemon(poke) {
+    let tipos = poke.types.map((type) => `<p class="${type.type.name} tipo">${type.type.name}</p>`);
     tipos = tipos.join('');
 
     let pokeId = poke.id.toString();
-    if (pokeId.length === 1){
+    if (pokeId.length === 1) {
         pokeId = "00" + pokeId;
-    }else if (pokeId.length === 2){
+    } else if (pokeId.length === 2) {
         pokeId = "0" + pokeId;
     }
-    
 
     const div = document.createElement("div");
-    div.classList.add("pokemon")
+    div.classList.add("pokemon");
     div.innerHTML = `
     <p class="pokemon-id-back">#${pokeId}</p>
     <div class="pokemon-imagen">
@@ -43,39 +50,21 @@ function mostrarPokemon(poke){
         </div>
     </div>
     `;
-    listaPokemon.append(div)
+    listaPokemon.append(div);
 }
 
-botonesHeader.forEach(boton => boton.addEventListener("click", (event) =>{
+botonesHeader.forEach(boton => boton.addEventListener("click", (event) => {
     const botonId = event.currentTarget.id;
 
-    listaPokemon.innerHTML = "";
-
-    for (let i = 1; i <= 151; i++){
-        fetch(URL + i)
-            .then((Response) => Response.json())
-            .then(data => {
-
-                if(botonId === "ver-todos"){
-                    mostrarPokemon(data);
-                }else{
-                    const tipos = data.types.map(type => type.type.name);
-                    if (tipos.some(tipo => tipo.includes(botonId))){
-                        mostrarPokemon(data);
-                    }
-                }
-            })
+    if (botonId === "ver-todos") {
+        displayPokemons(allPokemons);
+    } else {
+        const filteredPokemons = allPokemons.filter(pokemon => {
+            const tipos = pokemon.types.map(type => type.type.name);
+            return tipos.includes(botonId);
+        });
+        displayPokemons(filteredPokemons);
     }
-}))
-/*
-function datosPoke(){
-    const div = document.createElement("div");
-    console.log("le diste click")
-    div.innerHTML = `
-    <div class="datosP">
-        
-    </div>
-    `;
-    datosPokemon.append(div)
-}
-*/
+}));
+
+fetchAllPokemons();
